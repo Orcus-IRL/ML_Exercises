@@ -1,0 +1,81 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+class LinearRegression:
+    def __init__(self, alpha, iterations):
+        self.alpha = alpha  # Learning rate
+        self.iterations = iterations  # Number of iterations
+        self.w = None  # Weights
+        self.b = None  # Bias
+
+    def fit(self, X, y):
+        m, n = X.shape  # Number of samples and features
+        self.w = np.zeros(n)  # Initialize weights to zeros
+        self.b = 0  # Initialize bias to zero
+
+        for i in range(self.iterations):
+            # Predictions
+            predictions = np.dot(X, self.w) + self.b
+            
+            # Check for NaN values in predictions
+            if np.any(np.isnan(predictions)):
+                print("Predictions contain NaN values.")
+                break
+            
+            # Compute gradients
+            dw = (1/m) * np.dot(X.T, (predictions - y))
+            db = (1/m) * np.sum(predictions - y)
+            
+            # Debugging
+            # print(f"Iteration {i}: dw = {dw}, db = {db}, weights = {self.w}, bias = {self.b}")
+
+            # Check for NaN or Inf values in gradients
+            if np.any(np.isnan(dw)) or np.any(np.isinf(dw)):
+                print("dw contains NaN or Inf values.")
+                break
+            
+            # Update weights and bias
+            self.w -= self.alpha * dw
+            self.b -= self.alpha * db
+
+    def predict(self, X):
+        return np.dot(X, self.w) + self.b
+
+    def mean_squared_error(self, y_true, y_pred):
+        return np.mean((y_true - y_pred) ** 2)
+
+X = np.array([[800], [900], [1000], [1100], [1200], [1300], [1400]])  # House sizes
+y = np.array([150000, 175000, 200000, 225000, 250000, 275000, 300000])  # House prices
+
+# Splitting the dataset into training and testing sets
+X_train = X[:5]  # First 5 samples for training
+y_train = y[:5]
+X_test = X[5:]  # Last 2 samples for testing
+y_test = y[5:]
+
+# Normalize the features
+X_mean = np.mean(X_train)
+X_std = np.std(X_train)
+X_train_normalized = (X_train - X_mean) / X_std
+X_test_normalized = (X_test - X_mean) / X_std
+
+# Training the model
+model = LinearRegression(alpha=0.01, iterations=1000)
+model.fit(X_train_normalized, y_train)
+
+# Making predictions
+y_pred = model.predict(X_test_normalized)
+
+# Evaluating the model
+mse = model.mean_squared_error(y_test, y_pred)
+print(f"Mean Squared Error: {mse}")
+
+# Visualizing the results
+plt.scatter(X, y, color='blue', label='Actual data')
+plt.plot(X, model.predict((X - X_mean) / X_std), color='red', label='Regression line')
+plt.scatter(X_test, y_pred, color='green', label='Predicted data')
+plt.xlabel('Size (sq ft)')
+plt.ylabel('Price ($)')
+plt.title('House Price Prediction')
+plt.legend()
+plt.show()
