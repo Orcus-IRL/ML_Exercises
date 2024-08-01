@@ -1,0 +1,57 @@
+class CarPricePrediction:
+    def __init__(self, alpha, num_iterations):
+        self.alpha = alpha
+        self.num_iterations = num_iterations
+        self.w = None
+        self.b = None
+
+    def fit(self,X,y):
+        m,n = X.shape
+        self.w = np.zeros(n)
+        self.b = 0
+
+        for _ in range(self.num_iterations):
+            prediction = np.dot(X, self.w) + self.b
+            dw = 1/m * np.dot(X.T, (prediction-y))
+            db = (1/m) * np.sum(prediction - y)
+
+            self.w -= self.alpha*dw
+            self.b -= self.alpha*db
+
+    def predict(self, X):
+        return np.dot(X, self.w) + self.b
+
+    def mse(self, y_true, y_pred):
+        return np.mean((y_true - y_pred)**2)
+
+
+X = np.array([[1], [2], [3], [4], [5], [6], [7]])  # Car ages
+y = np.array([20000, 18000, 15000, 13000, 10000, 8000, 6000])  # Car prices
+
+X_train = X[:5]
+X_test = X[5:]
+y_train = y[:5]
+y_test = y[5:]
+
+X_mean = np.mean(X_train)
+X_std = np.std(X_train)
+X_train_normalized = (X_train - X_mean)/X_std
+X_test_nomalized = (X_test - X_mean)/X_std
+
+model = CarPricePrediction(0.1, 1000)
+model.fit(X_train_normalized, y_train)
+y_predict = model.predict(X_test_normalized)
+
+# Evaluating the model
+mse = model.mse(y_test, y_predict)
+print(f"Mean Squared Error: {mse}")
+
+# Visualizing the results
+plt.scatter(X, y, color='blue', label='Actual data')
+plt.plot(X, model.predict((X - X_mean) / X_std), color='red', label='Regression line')
+plt.scatter(X_test, y_pred, color='green', label='Predicted data')
+plt.xlabel('Age (years)')
+plt.ylabel('Price ($)')
+plt.title('Car Price Prediction')
+plt.legend()
+plt.show()
