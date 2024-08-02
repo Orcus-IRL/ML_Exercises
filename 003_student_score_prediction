@@ -1,0 +1,67 @@
+# creating a class 
+class StudentScorePrediction:
+    def __init__(self, alpha, num_iter):
+        self.alpha = alpha
+        self.num_iter = num_iter
+        self.w = None
+        self.b = None
+
+    def fit(self, X, y):
+        m,n = X.shape
+        self.w = np.zeros(n)
+        self.b = 0
+
+        for _ in range(self.num_iter):
+            prediction = np.dot(X, self.w) + self.b
+            dw = 1/m * np.dot(X.T,(prediction - y))
+            db = 1/m * sum(prediction - y)
+            print(f"prediction = {prediction}")
+            print(f"dw = {dw}")
+            print(f"db = {db}")
+            print()
+            self.w -= self.alpha * dw
+            self.b -= self.alpha * db
+
+
+    def predict(self, X):
+        return np.dot(X, self.w) + self.b
+
+    def mse(self, y_true, y_pred):
+        return np.mean((y_true - y_pred)**2)
+
+
+X = np.array([[1.5], [2.0], [2.5], [3.0], [3.5], [4.0], [4.5], [5.0], [5.5], [6.0]])  # Hours studied
+y = np.array([52, 56, 60, 62, 68, 70, 72, 75, 78, 80])  # Exam scores
+
+X_train = X[:8]
+y_train = y[:8]
+X_test = X[8:]
+y_test = y[8:]
+
+# normalize the values
+X_mean = np.mean(X_train)
+X_std = np.std(X_train)
+X_train_normalized = (X_train - X_mean)/X_std
+X_test_normalized = (X_test - X_mean)/X_std
+
+#model build
+model = StudentScorePrediction(0.01, 1000)
+model.fit(X_train_normalized, y_train)
+
+y_predict = model.predict(X_test_normalized)
+mse = model.mse(y_test, y_predict)
+print(f"The mean square error is: {mse}")
+
+#plotting
+plt.scatter(X, y, color='blue', label
+
+='Actual data')
+plt.plot(X, model.predict((X - X_mean) / X_std), color='red', label='Regression line')
+plt.scatter(X_test, y_pred, color='green', label='Predicted data')
+plt.xlabel('Hours Studied')
+plt.ylabel('Exam Score')
+plt.title('Student Exam Score Prediction')
+plt.legend()
+plt.show()
+
+
