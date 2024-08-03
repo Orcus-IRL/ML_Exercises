@@ -1,0 +1,94 @@
+
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+
+
+class HousePricePrediction:
+    def __init__(self, alpha, iterations):
+        self.alpha = alpha
+        self.iterations = iterations
+        self.w = None
+        self.b = None
+
+    def fit(self, X, y):
+        m,n = X.shape
+        self.w = np.zeros(n)
+        self.b = 0
+        for _ in range(self.iterations):
+            predictions = np.dot(X,self.w) + self.b
+            dw = 1/m * np.dot(X.T, (predictions - y))
+            db = 1/m * np.sum(predictions - y)
+            self.w -= self.alpha * dw
+            self.b -= self.alpha * db
+
+    def predict(self, X):
+        return np.dot(X,self.w) + self.b
+
+    def mse(self, y_true, y_predict):
+        return np.mean((y_true - y_predict) ** 2)
+
+
+
+
+np.random.seed(42)
+sizes = np.random.randint(500, 3500, size=100)
+noise = np.random.normal(0, 10000, size=sizes.shape)
+prices = 200 + 100 * sizes + noise
+# Create a DataFrame
+data = pd.DataFrame({'Size': sizes, 'Price': prices})
+# Save the dataset to a CSV file if needed
+data.to_csv('house_prices_dataset.csv', index=False)
+
+
+
+# Split the dataset into training and testing sets
+X = data[['Size']].values  # Features
+y = data['Price'].values    # Target variable
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Initialize and train the model
+alpha = 0.01  # Learning rate
+iterations = 2000  # Number of iterations
+model = HousePricePrediction(alpha, iterations)
+model.fit(X_train, y_train)
+
+# Make predictions
+y_train_pred = model.predict(X_train)
+y_test_pred = model.predict(X_test)
+
+# Evaluate the model
+train_mse = model.mse(y_train, y_train_pred)
+print(f'MSE: {train_mse}')
+
+
+# Visualization
+plt.figure(figsize=(12, 6))
+
+# Plot training data and the fitted regression line
+# plt.subplot(1, 2, 1)
+# plt.scatter(X_train, y_train, color='blue', label='Training Data')
+# plt.plot(X_train, y_train_pred, color='red', label='Fitted Line')
+# plt.title('Training Data')
+# plt.xlabel('Size (sq ft)')
+# plt.ylabel('Price')
+# plt.legend()
+
+# Plot testing data and the fitted regression line
+plt.subplot(1, 2, 2)
+plt.scatter(X_test, y_test, color='green', label='Testing Data')
+plt.plot(X_test, y_test_pred, color='red', label='Fitted Line')
+plt.title('Testing Data')
+plt.xlabel('Size (sq ft)')
+plt.ylabel('Price')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+    
