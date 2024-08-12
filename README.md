@@ -1,1 +1,1 @@
-For now just trying out Single Class Linear regression :)
+For now, just trying out Single Class Linear regression :)
